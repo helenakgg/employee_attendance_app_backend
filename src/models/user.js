@@ -7,7 +7,7 @@ export const User = db.sequelize.define("users", {
         autoIncrement: true,
         allowNull: false
     },
-    role_id : {
+    roleId : {
         type : db.Sequelize.INTEGER,
         allowNull : false
     },
@@ -27,23 +27,19 @@ export const User = db.sequelize.define("users", {
         type : db.Sequelize.DATE,
         allowNull : true
     },
-    join_date: {
+    joinDate: {
         type : db.Sequelize.DATE,
         allowNull : true
     },
-    invitation_token : {
+    invitationToken : {
         type : db.Sequelize.STRING(255),
         allowNull : true,
     },
-    token_expiration : {
+    tokenExpiration : {
         type : db.Sequelize.TIME,
         allowNull : true,
     },
-    salary : {
-        type : db.Sequelize.INTEGER,
-        allowNull : true
-    },
-    shift_id : {
+    shiftId : {
         type : db.Sequelize.INTEGER,
         allowNull : true
     },
@@ -58,7 +54,7 @@ export const Role = db.sequelize.define("roles", {
         autoIncrement: true,
         allowNull: false
     },
-    role_name : {
+    roleName : {
         type : db.Sequelize.STRING,
         allowNull : false
     },
@@ -73,15 +69,15 @@ export const Shift = db.sequelize.define("shifts", {
         autoIncrement: true,
         allowNull: false
     },
-    shift_name : {
+    shiftName : {
         type : db.Sequelize.STRING,
         allowNull : false
     },
-    start_time : {
+    startTime : {
         type : db.Sequelize.TIME,
         allowNull : false
     },
-    end_time : {
+    endTime : {
         type : db.Sequelize.TIME,
         allowNull : false
     },
@@ -89,62 +85,18 @@ export const Shift = db.sequelize.define("shifts", {
 { timestamps: false }
 )
 
-export const Attendance = db.sequelize.define("attendances", {
+export const Salary = db.sequelize.define("salaries", {
     id: {
         type: db.Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
     },
-    user_id : {
+    userId : {
         type : db.Sequelize.INTEGER,
         allowNull : false
     },
-    date : {
-        type : db.Sequelize.DATEONLY,
-        allowNull : false
-    },
-    clock_in : {
-        type : db.Sequelize.TIME,
-        allowNull : true
-    },
-    clock_out : {
-        type : db.Sequelize.TIME,
-        allowNull : true
-    },
-},
-{ timestamps: false }
-)
-
-export const PayrollReport = db.sequelize.define("payroll_reports", {
-    id: {
-        type: db.Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
-    },
-    report_date : {
-        type : db.Sequelize.DATEONLY,
-        allowNull : false
-    },
-    user_id : {
-        type : db.Sequelize.INTEGER,
-        allowNull : false
-    },
-    start_date : {
-        type : db.Sequelize.DATEONLY,
-        allowNull : false
-    },
-    end_date : {
-        type : db.Sequelize.DATEONLY,
-        allowNull : false
-    },
-    deduction : {
-        type : db.Sequelize.INTEGER,
-        allowNull : false,
-        defaultValue : 0
-    },
-    net_salary : {
+    salary : {
         type : db.Sequelize.INTEGER,
         allowNull : false,
         defaultValue : 0
@@ -152,14 +104,3 @@ export const PayrollReport = db.sequelize.define("payroll_reports", {
 },
 { timestamps: false }
 )
-
-// @relation
-User.hasOne(Role, { foreignKey : 'role_id' });
-User.hasOne(Shift, { foreignKey : 'shift_id' });
-User.belongsTo(Attendance, { foreignKey : 'user_id' });
-User.belongsTo(PayrollReport, { foreignKey : 'user_id' });
-
-Role.belongsTo(User, { foreignKey : 'role_id' });
-Shift.belongsTo(User, { foreignKey : 'shift_id' });
-Attendance.hasMany(User, { foreignKey : 'user_id' });
-PayrollReport.hasMany(User, { foreignKey : 'user_id' });

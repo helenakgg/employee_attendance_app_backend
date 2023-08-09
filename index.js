@@ -22,10 +22,12 @@ app.get("/", (req, res) => {
 
 // @use router
 import AuthRouters from "./src/controllers/auth/routers.js"
-
+import AdminRouters from "./src/controllers/admin/routers.js"
+import EmployeeRouters from "./src/controllers/employee/routers.js"
 
 app.use("/api/auth", AuthRouters)
-
+app.use("/api/admin", AdminRouters)
+app.use("/api/employee", EmployeeRouters)
 
 // @global error handler
 app.use(middleware.errorHandler)

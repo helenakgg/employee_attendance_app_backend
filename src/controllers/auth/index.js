@@ -1,22 +1,15 @@
 import { ValidationError } from "yup"
-import handlebars from "handlebars"
-import fs from "fs"
-import path from "path"
-import moment from "moment"
-
-import * as config from "../../config/index.js"
 import * as helpers from "../../helpers/index.js"
 import * as error from "../../middlewares/error.handler.js"
-import { User } from "../../models/models.js"
+import { User } from "../../models/user.js"
 import db from "../../database/index.js"
 import * as validation from "./validation.js"
 
 // @register admin
 export const register = async (req, res, next) => {
+    // @create transaction
+    const transaction = await db.sequelize.transaction();
     try {
-        // @create transaction
-        const transaction = await db.sequelize.transaction();
-        
         // @validation
         const { email, password } = req.body;
         await validation.RegisterValidationSchema.validate(req.body);
@@ -32,16 +25,16 @@ export const register = async (req, res, next) => {
         const user = await User?.create({
             email,
             password : hashedPassword,
-            role : 1
+            roleId : 1
         });
 
         // @delete unused data from response
         delete user?.dataValues?.password;
-        delete user?.dataValues?.invitation_token;
-        delete user?.dataValues?.token_expiration;
+        delete user?.dataValues?.invitationToken;
+        delete user?.dataValues?.tokenExpiration;
        
         // @generate access token
-        const accessToken = helpers.createToken({ id: user?.dataValues?.id, role : user?.dataValues?.role });
+        const accessToken = helpers.createToken({ id: user?.dataValues?.id, roleId : user?.dataValues?.roleId });
 
         // @send response
         res.header("Authorization", `Bearer ${accessToken}`)
@@ -68,32 +61,24 @@ export const register = async (req, res, next) => {
 // @login process
 export const login = async (req, res, next) => {
     try {
-        // @validation, we assume that username will hold either username or email
-        const { username, password } = req.body;
+        const { email, password } = req.body;
         await validation.LoginValidationSchema.validate(req.body);
 
-        // @check if username is email
-        const isAnEmail = await validation.IsEmail(username);
-        const query = isAnEmail ? { email : username } : { username };
-
         // @check if user exists
-        const userExists = await User?.findOne({ where: query });
+        const userExists = await User?.findOne({ where: { email } });
         if (!userExists) throw ({ status : 400, message : error.USER_DOES_NOT_EXISTS })
-
-        // @check if user is disable
-        if (userExists?.dataValues?.isDisable === 1) throw ({ status : 400, message : error.CASHIER_IS_DISABLE });
 
         // @check if password is correct
         const isPasswordCorrect = helpers.comparePassword(password, userExists?.dataValues?.password);
         if (!isPasswordCorrect) throw ({ status : 400, message : error.INVALID_CREDENTIALS });
 
         // @generate access token
-        const accessToken = helpers.createToken({ uuid: userExists?.dataValues?.uuid, role : userExists?.dataValues?.role });
+        const accessToken = helpers.createToken({ id: userExists?.dataValues?.id, roleId : userExists?.dataValues?.roleId });
 
         // @delete password from response
         delete userExists?.dataValues?.password;
-        delete userExists?.dataValues?.otp;
-        delete userExists?.dataValues?.expiredOtp;
+        delete userExists?.dataValues?.invitationToken;
+        delete userExists?.dataValues?.tokenExpiration;
 
         // @return response
         res.header("Authorization", `Bearer ${accessToken}`)
@@ -112,15 +97,15 @@ export const login = async (req, res, next) => {
 export const keepLogin = async (req, res, next) => {
     try {
         // @get user id from token
-        const { uuid } = req.user;
+        const { id } = req.user;
 
         // @get user data
-        const user = await User?.findOne({ where : { uuid } });
+        const user = await User?.findOne({ where : { id } });
 
         // @delete password from response
         delete user?.dataValues?.password;
-        delete user?.dataValues?.otp;
-        delete user?.dataValues?.expiredOtp;
+        delete user?.dataValues?.invitationToken;
+        delete user?.dataValues?.tokenExpiration;
 
         // @return response
         res.status(200).json({ user })

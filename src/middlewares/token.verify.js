@@ -19,7 +19,7 @@ export async function verifyUser(req, res, next) {
 // @admin only middleware
 export async function verifyAdmin(req, res, next) {
     try {
-        // @heck if token exists
+        // @check if token exists
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) throw ({ message : "Unauthorized" });
 
@@ -28,7 +28,7 @@ export async function verifyAdmin(req, res, next) {
         req.admin = decoded;
 
         // @check if user is admin
-        if (decoded?.role !== 1) throw ({  message : "Restricted" });
+        if (decoded?.roleId !== 1) throw ({  message : "Restricted" });
 
         next();
     } catch (error) {
@@ -39,7 +39,7 @@ export async function verifyAdmin(req, res, next) {
 // @employee only middleware
 export async function verifyEmployee(req, res, next) {
     try {
-        // @heck if token exists
+        // @check if token exists
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) throw ({ message : "Unauthorized" });
 
@@ -48,7 +48,7 @@ export async function verifyEmployee(req, res, next) {
         req.employee = decoded;
 
         // @check if user is admin
-        if (decoded?.role !== 2) throw ({  message : "Restricted" });
+        if (decoded?.roleId !== 2) throw ({  message : "Restricted" });
 
         next();
     } catch (error) {
